@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+
+<body>
+	<!--	<form th:action="@{/user/index2}" method="post">-->
+	<form th:action="@{/user/register}" th:object="${mailForm}" method="post">
+		<span th:errors="*{email}" style="color: red;">エラー</span><br>
+		<!--		メールアドレス：<input type="text" name="email"><br>-->
+		メールアドレス：<input type="text" name="email" th:field="*{email}"><br>
+		<br>
+		<button>送信</button>
+	</form>
+</body>
+
+</html>
