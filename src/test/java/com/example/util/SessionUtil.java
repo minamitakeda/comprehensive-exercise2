@@ -20,11 +20,5 @@ public class SessionUtil {
 		sessionMap1.put("key", "0ba7c767-50d5-4506-9f62-79e52aa21426");
 		return createMockHttpSession(sessionMap1);
 	}
-	public static MockHttpSession createMockHttpSession2() {
-		Map<String, Object>sessionMap2=new LinkedHashMap<>();
-		sessionMap2.put("userEmailPass", "aaa@gmail.com");
-		sessionMap2.put("uniqueUrl", "http://localhost:8080/user/sendmail?key");
-		return createMockHttpSession(sessionMap2);
-	}
 
 }

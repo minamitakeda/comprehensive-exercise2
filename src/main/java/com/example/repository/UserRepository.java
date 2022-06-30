@@ -102,7 +102,7 @@ public class UserRepository {
 	}
 
 	public List<Mail> findByEmail2(String key) {
-		String sql = "SELECT * FROM mails WHERE key=:key AND date +cast('1 days' as interval)>now(); AND status=false"; 
+		String sql = "SELECT * FROM mails WHERE key=:key AND date +cast('1 days' as interval)>now() AND status=false"; 
 		SqlParameterSource param = new MapSqlParameterSource().addValue("key", key);
 		List<Mail> userRegisterList3 = template.query(sql, param, USERREGISTER_ROW_MAPPER);
 		if (userRegisterList3.size() == 0) {

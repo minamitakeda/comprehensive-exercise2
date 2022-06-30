@@ -16,7 +16,7 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -77,7 +77,6 @@ class UserControllerTest {
 	@Test
 	@DisplayName("メールアドレス一致かつ24時間以内にURL発行済みのため、メールアドレス入力画面に遷移(l55-59)")
 	@DatabaseSetup(value = "classpath:test3.xlsx")
-	@Transactional
 	void test3() throws Exception {
 		MvcResult mvcResult = mockMvc.perform(post("/user/register").param("email", "abc@gmail.com"))
 				.andExpect(view().name("mail")).andExpect(model().hasErrors())
@@ -92,7 +91,6 @@ class UserControllerTest {
 	@Test
 	@DisplayName("既に会員登録があるため、送信完了画面に遷移(l60-63")
 	@DatabaseSetup(value = "classpath:test4.xlsx")
-	@Transactional
 	void test4() throws Exception {
 		mockMvc.perform(post("/user/register").param("email", "abc@gmail.com")).andExpect(view().name("sendCompletely"))
 				.andReturn();
@@ -102,7 +100,6 @@ class UserControllerTest {
 	@DisplayName("mailsテーブルに情報挿入(l64-75 insertまで)")
 	@DatabaseSetup(value = "classpath:test5_1.xlsx")
 	@ExpectedDatabase(value = "classpath:test5_2.xlsx", assertionMode = DatabaseAssertionMode.NON_STRICT)
-	@Transactional
 	void test5() throws Exception {
 		mockMvc.perform(post("/user/register").param("email", "abc@gmail.com"))
 				.andExpect(view().name("redirect:/user/index2"));
@@ -117,7 +114,6 @@ class UserControllerTest {
 	@Test
 	@DisplayName("keyが一致かつ24時間以内にURL押下したため、ユーザー登録画面に遷移(l84-91)")
 	@DatabaseSetup(value = "classpath:test7.xlsx")
-	@Transactional
 	void test7() throws Exception {
 		mockMvc.perform(post("/user/sendmail").param("key", "0ba7c767-50d5-4506-9f62-79e52aa21426"))
 				.andExpect(view().name("user")).andReturn();
@@ -126,7 +122,6 @@ class UserControllerTest {
 	@Test
 	@DisplayName("keyは一致しているが、24時間以降にURL押下したため、URL無効画面に遷移(l84-93)")
 	@DatabaseSetup(value = "classpath:test8.xlsx")
-	@Transactional
 	void test8() throws Exception {
 		mockMvc.perform(post("/user/sendmail").param("key", "0ba7c767-50d5-4506-9f62-79e52aa21426"))
 				.andExpect(view().name("InvalidUrl")).andReturn();
@@ -135,7 +130,6 @@ class UserControllerTest {
 	@Test
 	@DisplayName("24時間以内にURLを押下したが、keyが一致していないため、URL無効画面に遷移(l84-90)")
 	@DatabaseSetup(value = "classpath:test9.xlsx")
-	@Transactional
 	void test9() throws Exception {
 		mockMvc.perform(post("/user/sendmail").param("key", "1ba7c767-50d5-4506-9f62-79e52aa21426"))
 				.andExpect(view().name("InvalidUrl")).andReturn();
@@ -144,23 +138,18 @@ class UserControllerTest {
 	@Test
 	@DisplayName("keyも一致せず、24時間以降にURL押下したため、URL無効画面遷移(l84-87,92-93)")
 	@DatabaseSetup(value = "classpath:test10.xlsx")
-	@Transactional
 	void test10() throws Exception {
 		mockMvc.perform(post("/user/sendmail").param("key", "1ba7c767-50d5-4506-9f62-79e52aa21426"))
 				.andExpect(view().name("InvalidUrl")).andReturn();
 	}
 
 	@Test
-	@DisplayName("パスワードと確認用パスワードが一致していないため、ユーザー登録不可(l95-102)")
-	@DatabaseSetup(value = "classpath:test11_1.xlsx")
-	@ExpectedDatabase(value = "classpath:test11_2.xlsx", assertionMode = DatabaseAssertionMode.NON_STRICT)
-	@Transactional
+	@DisplayName("パスワードと確認用パスワードが一致していないため、ユーザー登録不可(l118-122)")
 	void test11() throws Exception {
-		MockHttpSession mockHtttpSession2 = SessionUtil.createMockHttpSession2();
 		MvcResult mvcResult = mockMvc
-				.perform(post("/user/userRegisterConfirm").session(mockHtttpSession2).param("name", "テスト")
-						.param("ruby", "テスト").param("email", "abc@gmail.com").param("zipcode", "111-1111")
-						.param("address", "住所").param("telephone", "090-1234-5678").param("password", "12345678")
+				.perform(post("/user/userRegisterConfirm").param("name", "テスト").param("ruby", "てすと")
+						.param("email", "abc@gmail.com").param("zipcode", "111-1111").param("address", "住所")
+						.param("telephone", "090-1234-5678").param("password", "12345678")
 						.param("confirmpassword", "87654321"))
 				.andExpect(view().name("user")).andExpect(model().hasErrors())
 				.andExpect(model().attributeHasErrors("userRegisterForm")).andReturn();
@@ -168,11 +157,11 @@ class UserControllerTest {
 		BindingResult bindingResut = (BindingResult) mvcResult.getModelAndView().getModel()
 				.get(BindingResult.MODEL_KEY_PREFIX + "userRegisterForm");
 		String message = bindingResut.getFieldError().getDefaultMessage();
-		assertEquals("パスワードが一致していません", message);
+		assertEquals("パスワードと確認用パスワードが一致していません", message);
 	}
 
 	@Test
-	@DisplayName("入力欄空欄で送信(入力値チェック)のため、ユーザー登録画面に遷移(l104-106)")
+	@DisplayName("入力欄空欄で送信(入力値チェック)のため、ユーザー登録画面に遷移(l96-101)")
 	void test12() throws Exception {
 		mockMvc.perform(post("/user/userRegisterConfirm").param("name", "　").param("ruby", "　").param("email", "　")
 				.param("zipcode", "　").param("address", "　").param("telephone", "　").param("password", "　")
@@ -180,10 +169,9 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("user_registersテーブルに情報挿入(l95-114)")
+	@DisplayName("user_registersテーブルに情報挿入(l126-134)")
 	@DatabaseSetup(value = "classpath:test13_1.xlsx")
 	@ExpectedDatabase(value = "classpath:test13_2.xlsx", assertionMode = DatabaseAssertionMode.NON_STRICT)
-	@Transactional
 	void test13() throws Exception {
 		MockHttpSession mockHttpsession = SessionUtil.createMockHttpSession1();
 		mockMvc.perform(post("/user/userRegisterConfirm").session(mockHttpsession)
@@ -194,13 +182,12 @@ class UserControllerTest {
 	}
 
 	@Test
-	@DisplayName("mailsテーブルのststusをfalse→trueへ(l95-114)")
-	@DatabaseSetup(value = "classpath:test14_1_1.xlsx")
+	@DisplayName("mailsテーブルのststusをfalse→trueへ(l124-131)")
+	@DatabaseSetup(value = "classpath:test14_1.xlsx")
 	@ExpectedDatabase(value = "classpath:test14_2.xlsx", assertionMode = DatabaseAssertionMode.NON_STRICT)
-	@Transactional
 	void test14() throws Exception {
-		MockHttpSession mockHttpsession = SessionUtil.createMockHttpSession1();
-		mockMvc.perform(post("/user/userRegisterConfirm").session(mockHttpsession).param("name", "テスト")
+		MockHttpSession mockHttpSession = SessionUtil.createMockHttpSession1();
+		mockMvc.perform(post("/user/userRegisterConfirm").session(mockHttpSession).param("name", "テスト")
 				.param("ruby", "てすと").param("email", "abc@gmail.com").param("zipcode", "111-1111")
 				.param("address", "住所").param("telephone", "090-1234-5678").param("password", "12345678")
 				.param("confirmpassword", "12345678")).andExpect(view().name("redirect:/user/index3")).andReturn();
@@ -210,5 +197,25 @@ class UserControllerTest {
 	@DisplayName("ユーザー登録完了画面の表示(l116-119)")
 	void test15() throws Exception {
 		mockMvc.perform(post("/user/index3")).andExpect(view().name("registrationCompletely")).andReturn();
+	}
+
+	@Test
+	@DisplayName("名前欄にスペースNG")
+	void test16() throws Exception {
+		MockHttpSession mockHttpSession = SessionUtil.createMockHttpSession1();
+		mockMvc.perform(post("/user/userRegisterConfirm").session(mockHttpSession).param("name", "　　　")
+				.param("ruby", "てすと").param("email", "abc@gmail.com").param("zipcode", "111-1111")
+				.param("address", "住所").param("telephone", "090-1234-5678").param("password", "12345678")
+				.param("confirmpassword", "12345678")).andExpect(view().name("user")).andReturn();
+	}
+	
+	@Test
+	@DisplayName("住所欄にスペースNG")
+	void test17() throws Exception{
+		MockHttpSession mockHttpSession=SessionUtil.createMockHttpSession1();
+		mockMvc.perform(post("/user/userRegisterConfirm").session(mockHttpSession).param("name", "")
+				.param("ruby", "てすと").param("email", "abc@gmail.com").param("zipcode", "111-1111")
+				.param("address", "　　　").param("telephone", "090-1234-5678").param("password", "12345678")
+				.param("confirmpassword", "12345678")).andExpect(view().name("user")).andReturn();
 	}
 }

@@ -16,10 +16,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.domain.UserRegister;
 import com.example.domain.Mail;
-import com.example.form.UserRegisterForm;
+import com.example.domain.UserRegister;
+import com.example.domain.domain.GroupOrder;
 import com.example.form.MailForm;
+import com.example.form.UserRegisterForm;
 import com.example.service.UserService;
 
 @Controller
@@ -58,6 +59,7 @@ public class UserController {
 			return "mail";
 		}
 		List<UserRegister> userList = userService.findByUser(mailForm.getEmail());
+		System.out.println(userList);
 		if (userList != null) {
 			return "sendCompletely";
 		} else {
@@ -93,18 +95,36 @@ public class UserController {
 	}
 
 	@RequestMapping("/userRegisterConfirm")
-	public String userRegisterConfirm(@Validated UserRegisterForm userRegisterForm, BindingResult result) {
+	public String userRegisterConfirm(@Validated(GroupOrder.class) UserRegisterForm userRegisterForm,
+			BindingResult result) {
 		String key = (String) session.getAttribute("key");
-		System.out.println(userRegisterForm.getPassword());
-		System.out.println(userRegisterForm.getConfirmpassword());
-		if (!userRegisterForm.getPassword().equals(userRegisterForm.getConfirmpassword())) {
-			result.rejectValue("confirmpassword", "", "パスワードが一致していません");
-		}
-
 		if (result.hasErrors()) {
 			return "user";
 		}
+
+		String name = userRegisterForm.getName();
+		name = name.replaceAll("[\\s　]", "");
+		if ("".equals(name)) {
+			result.rejectValue("name", null, "スペースのみの入力はしないでください");
+			return "user";
+		}
+		
+		String address = userRegisterForm.getAddress();
+		address = address.replaceAll("[\\s　]", "");
+		if ("".equals(address)) {
+			result.rejectValue("address", null, "スペースのみの入力はしないでください");
+			return "user";
+		}
+
+		System.out.println(userRegisterForm.getPassword());
+		System.out.println(userRegisterForm.getConfirmpassword());
+		if (!userRegisterForm.getPassword().equals(userRegisterForm.getConfirmpassword())) {
+			result.rejectValue("confirmpassword", "", "パスワードと確認用パスワードが一致していません");
+			return "user";
+		}
+
 		List<Mail> userRegisterList = userService.findByEmail2(key);
+		System.out.println(userRegisterList);
 		UserRegister userRegister = new UserRegister();
 		BeanUtils.copyProperties(userRegisterForm, userRegister);
 		userRegister.setEmail(userRegisterList.get(0).getEmail());
